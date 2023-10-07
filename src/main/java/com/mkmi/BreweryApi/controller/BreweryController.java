@@ -1,9 +1,14 @@
 package com.mkmi.BreweryApi.controller;
 
-import com.mkmi.BreweryApi.model.Brewery;
-import com.mkmi.BreweryApi.service.BreweryService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import com.mkmi.BreweryApi.model.Brewery;
 
 import java.util.List;
 
@@ -11,40 +16,23 @@ import java.util.List;
 @RequestMapping("/breweries")
 public class BreweryController {
 
-    private final BreweryService breweryService;
+    private static final String API_URL = "https://api.openbrewerydb.org/v1/breweries";
 
     @Autowired
-    public BreweryController(BreweryService breweryService) {
-        this.breweryService = breweryService;
-    }
+    private RestTemplate restTemplate;
 
-    @GetMapping("/Id")
-    public Brewery getBreweryById(@PathVariable("Id") String obdbId) {
-        return breweryService.getBreweryById(obdbId);
-    }
+    @GetMapping
+    public ResponseEntity<List<Brewery>> getBreweries(@RequestParam(name = "state", required = false) String state) {
+        String apiUrl = API_URL;
 
-    @GetMapping("/list")
-    public List<Brewery> listBreweries() {
-        return breweryService.getAllBreweries();
-    }
+        if (state != null && !state.isEmpty()) {
+            apiUrl += "?by_state=" + state;
+        }
 
-    @GetMapping("/filter/city")
-    public List<Brewery> filterByCity(@RequestParam("by_city") String city) {
-        return breweryService.getBreweriesByCity(city);
-    }
+        ResponseEntity<Brewery[]> response = restTemplate.getForEntity(apiUrl, Brewery[].class);
+        Brewery[] breweries = response.getBody();
 
-    @GetMapping("/filter/ids")
-    public List<Brewery> filterByIds(@RequestParam("by_ids") List<String> breweryIds) {
-        return breweryService.getBreweriesByIds(breweryIds);
+        return ResponseEntity.ok(List.of(breweries));
     }
-
-    @GetMapping("/filter/name")
-    public List<Brewery> filterByName(@RequestParam("by_name") String name) {
-        return breweryService.getBreweriesByName(name);
-    }
-
-    @GetMapping("/filter/state")
-    public List<Brewery> filterByState(@RequestParam("by_state") String state) {
-        return breweryService.getBreweriesByState(state);
-    }
+    
 }
