@@ -22,17 +22,34 @@ public class BreweryController {
     private RestTemplate restTemplate;
 
     @GetMapping
-    public ResponseEntity<List<Brewery>> getBreweries(@RequestParam(name = "state", required = false) String state) {
+    public ResponseEntity<List<Brewery>> getBreweries(
+            @RequestParam(name = "state", required = false) String state,
+            @RequestParam(name = "zipcode", required = false) String zip,
+            @RequestParam(name = "type", required = false) String type) {
         String apiUrl = API_URL;
 
         if (state != null && !state.isEmpty()) {
-            apiUrl += "?by_state=" + state;
+            apiUrl += appendParameter(apiUrl, "by_state=" + state);
+        }
+        if (zip != null && !zip.isEmpty()) {
+            apiUrl += appendParameter(apiUrl, "by_postal=" + zip);
+        }
+        if (type != null && !type.isEmpty()) {
+            apiUrl += appendParameter(apiUrl, "by_type=" + type);
         }
 
         ResponseEntity<Brewery[]> response = restTemplate.getForEntity(apiUrl, Brewery[].class);
         Brewery[] breweries = response.getBody();
 
         return ResponseEntity.ok(List.of(breweries));
+    }
+
+    private String appendParameter(String apiUrl, String parameter) {
+        if (apiUrl.contains("?")) {
+            return "&" + parameter;
+        } else {
+            return "?" + parameter;
+        }
     }
     
 }

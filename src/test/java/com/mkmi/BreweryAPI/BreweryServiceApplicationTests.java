@@ -1,4 +1,4 @@
-package com.mkmi.BreweryService.BreweryService;
+package com.mkmi.BreweryAPI;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
